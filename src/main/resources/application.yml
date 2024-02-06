@@ -1,0 +1,51 @@
+issuer: http://localhost:8080/realms/spring-security
+client-id: spring-bcl
+client-secret : "**********"
+client-with-login-routes: /,/login/**,/oauth2/**,/logout/**
+client-permit-all: /logout/**
+
+server:
+  port: 7080
+
+spring:
+  security:
+    oauth2:
+      client:
+        provider:
+          keycloak:
+            issuer-uri: ${issuer}
+        registration:
+          keycloak:
+            provider: keycloak
+            client-id: ${client-id}
+            client-secret: ${client-secret}
+            authorization-grant-type: authorization_code
+            scope:
+            - openid
+            - profile
+            - email
+            - offline_access
+            - roles
+
+com:
+  c4-soft:
+    springaddons:
+      oidc:
+        ops:
+        - iss: ${issuer}
+          authorities:
+          - path: $.realm_access.roles
+        client:
+          security-matchers: ${client-with-login-routes}
+          client-uri: http://localhost:${server.port}
+          back-channel-logout:
+            enabled: true
+          permit-all: ${client-permit-all}
+        resourceserver:
+          permit-all:
+          - /**
+
+logging:
+  level:
+    org:
+      springframework: TRACE
